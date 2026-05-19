@@ -316,9 +316,133 @@ function ReviewCard({ review, user, schoolId, onDeleted }) {
   )
 }
 
-function IncidentCard({ inc, user, schoolId, onReact }) {
+function IncidentEditForm({ inc, onSaved, onCancel }) {
+  const [title, setTitle]               = useState(inc.title)
+  const [description, setDescription]   = useState(inc.description || '')
+  const [courseName, setCourseName]     = useState(inc.course_name || '')
+  const [year, setYear]                 = useState(inc.occurred_year  ?? '')
+  const [month, setMonth]               = useState(inc.occurred_month ?? '')
+  const [day, setDay]                   = useState(inc.occurred_day   ?? '')
+  const [error, setError]               = useState('')
+  const [submitting, setSubmitting]     = useState(false)
+
+  async function handleSave() {
+    if (!title.trim()) { setError('タイトルを入力してください'); return }
+    setSubmitting(true); setError('')
+    try {
+      await api.updateIncident(inc.id, {
+        title: title.trim(),
+        description: description.trim() || null,
+        school_id: inc.school_id,
+        course_name: courseName.trim() || null,
+        occurred_year:  year  ? Number(year)  : null,
+        occurred_month: month ? Number(month) : null,
+        occurred_day:   day   ? Number(day)   : null,
+      })
+      onSaved?.()
+    } catch (e) { setError(e.message) }
+    finally { setSubmitting(false) }
+  }
+
+  const inputStyle = {
+    width: '100%', padding: '0.45rem 0.7rem', background: 'var(--input-bg)',
+    border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
+    color: 'var(--text)', fontFamily: 'inherit', fontSize: '0.875rem',
+    boxSizing: 'border-box',
+  }
+
+  return (
+    <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <input style={inputStyle} placeholder="タイトル" value={title} onChange={e => setTitle(e.target.value)} />
+      <textarea style={{ ...inputStyle, resize: 'vertical', minHeight: 60 }} placeholder="詳細（任意）" value={description} onChange={e => setDescription(e.target.value)} rows={2} />
+      <input style={inputStyle} placeholder="コース名（任意）" value={courseName} onChange={e => setCourseName(e.target.value)} />
+      <div style={{ display: 'flex', gap: '0.4rem' }}>
+        <input style={{ ...inputStyle, flex: 1 }} placeholder="年" type="number" value={year}  onChange={e => setYear(e.target.value)} />
+        <input style={{ ...inputStyle, flex: 1 }} placeholder="月" type="number" value={month} onChange={e => setMonth(e.target.value)} />
+        <input style={{ ...inputStyle, flex: 1 }} placeholder="日" type="number" value={day}   onChange={e => setDay(e.target.value)} />
+      </div>
+      {error && <p className="error" style={{ margin: 0, fontSize: '0.8rem' }}>{error}</p>}
+      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+        <button className="btn btn-ghost btn-sm" onClick={onCancel}>キャンセル</button>
+        <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={submitting}>
+          {submitting ? '保存中...' : '保存'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function IncidentComposeForm({ schoolId, onCreated, onCancel }) {
+  const [title, setTitle]               = useState('')
+  const [description, setDescription]   = useState('')
+  const [courseName, setCourseName]     = useState('')
+  const [year, setYear]                 = useState('')
+  const [month, setMonth]               = useState('')
+  const [day, setDay]                   = useState('')
+  const [error, setError]               = useState('')
+  const [submitting, setSubmitting]     = useState(false)
+
+  async function handleSubmit() {
+    if (!title.trim()) { setError('タイトルを入力してください'); return }
+    setSubmitting(true); setError('')
+    try {
+      await api.createIncident({
+        title: title.trim(),
+        description: description.trim() || null,
+        school_id: schoolId,
+        course_name: courseName.trim() || null,
+        occurred_year:  year  ? Number(year)  : null,
+        occurred_month: month ? Number(month) : null,
+        occurred_day:   day   ? Number(day)   : null,
+      })
+      onCreated?.()
+    } catch (e) { setError(e.message) }
+    finally { setSubmitting(false) }
+  }
+
+  const inputStyle = {
+    width: '100%', padding: '0.5rem 0.75rem', background: 'var(--input-bg)',
+    border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
+    color: 'var(--text)', fontFamily: 'inherit', fontSize: '0.9rem',
+    boxSizing: 'border-box',
+  }
+
+  return (
+    <div className="card" style={{ marginBottom: '1rem' }}>
+      <h3 style={{ fontWeight: 600, marginBottom: '0.75rem' }}>事件を投稿</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+        <input style={inputStyle} placeholder="タイトル *" value={title} onChange={e => setTitle(e.target.value)} />
+        <textarea
+          style={{ ...inputStyle, resize: 'vertical', minHeight: 70 }}
+          placeholder="詳細（任意）"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          rows={3}
+        />
+        <input style={inputStyle} placeholder="コース名（任意）" value={courseName} onChange={e => setCourseName(e.target.value)} />
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <input style={{ ...inputStyle, flex: 1 }} placeholder="年" type="number" min="1900" max="2100" value={year}  onChange={e => setYear(e.target.value)} />
+          <input style={{ ...inputStyle, flex: 1 }} placeholder="月" type="number" min="1"    max="12"   value={month} onChange={e => setMonth(e.target.value)} />
+          <input style={{ ...inputStyle, flex: 1 }} placeholder="日" type="number" min="1"    max="31"   value={day}   onChange={e => setDay(e.target.value)} />
+        </div>
+        {error && <p className="error" style={{ margin: 0 }}>{error}</p>}
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+          {onCancel && <button className="btn btn-ghost btn-sm" onClick={onCancel}>キャンセル</button>}
+          <button className="btn btn-primary btn-sm" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? '投稿中...' : '投稿する'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function IncidentCard({ inc, user, schoolId, onReact, onDelete, onUpdated }) {
   const [showComments, setShowComments] = useState(false)
-  const isOwn = user && user.id === inc.user_id
+  const [editing, setEditing]           = useState(false)
+  const isOwn   = user && user.id === inc.user_id
+  const isAdmin = user && user.role === 'admin'
+  const canEdit = isOwn || isAdmin
 
   return (
     <div className="card" style={{ padding: 0, marginBottom: '0.75rem', overflow: 'visible' }}>
@@ -329,11 +453,21 @@ function IncidentCard({ inc, user, schoolId, onReact }) {
             <span className="badge badge-sakura" style={{ whiteSpace: 'nowrap' }}>📅 発生日 {fmtPartialDate(inc)}</span>
           )}
         </div>
-        {inc.course_name && (
-          <p style={{ marginTop: '0.3rem', fontSize: '0.8rem', color: 'var(--primary)' }}>📚 {inc.course_name}</p>
-        )}
-        {inc.description && (
-          <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--muted)', whiteSpace: 'pre-wrap' }}>{inc.description}</p>
+        {editing ? (
+          <IncidentEditForm
+            inc={inc}
+            onSaved={() => { setEditing(false); onUpdated?.() }}
+            onCancel={() => setEditing(false)}
+          />
+        ) : (
+          <>
+            {inc.course_name && (
+              <p style={{ marginTop: '0.3rem', fontSize: '0.8rem', color: 'var(--primary)' }}>📚 {inc.course_name}</p>
+            )}
+            {inc.description && (
+              <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--muted)', whiteSpace: 'pre-wrap' }}>{inc.description}</p>
+            )}
+          </>
         )}
         <div style={{ marginTop: '0.6rem', fontSize: '0.8rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           {inc.user_name && (
@@ -364,6 +498,14 @@ function IncidentCard({ inc, user, schoolId, onReact }) {
           <button className="post-action-btn reply-btn" onClick={() => setShowComments(v => !v)}>
             💬 {inc.comment_count > 0 ? inc.comment_count : ''} {showComments ? '閉じる' : 'コメント'}
           </button>
+          {canEdit && !editing && (
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.25rem' }}>
+              {isOwn && (
+                <button className="post-action-btn" style={{ fontSize: '0.76rem' }} onClick={() => setEditing(true)}>✏️</button>
+              )}
+              <button className="post-action-btn delete-btn" onClick={() => onDelete?.(inc.id)}>🗑</button>
+            </div>
+          )}
           {user && !isOwn && <IncidentReportButton user={user} incidentId={inc.id} />}
         </div>
       </div>
@@ -385,9 +527,10 @@ export default function SchoolDetailPage() {
   const [school, setSchool]         = useState(null)
   const [tab, setTab]               = useState('courses')
 
-  const [incData, setIncData]       = useState(null)
-  const [incSkip, setIncSkip]       = useState(0)
-  const [incLoading, setIncLoading] = useState(false)
+  const [incData, setIncData]         = useState(null)
+  const [incSkip, setIncSkip]         = useState(0)
+  const [incLoading, setIncLoading]   = useState(false)
+  const [showIncCompose, setShowIncCompose] = useState(false)
 
   const [reviewData, setReviewData]       = useState(null)
   const [reviewSkip, setReviewSkip]       = useState(0)
@@ -469,6 +612,12 @@ export default function SchoolDetailPage() {
   async function reactIncident(incId, reaction) {
     if (!user) return alert('ログインが必要です')
     await api.reactToIncident(incId, { reaction })
+    fetchIncidents()
+  }
+
+  async function handleDeleteIncident(incId) {
+    if (!confirm('この事件を削除しますか？')) return
+    await api.deleteIncident(incId)
     fetchIncidents()
   }
 
@@ -627,29 +776,47 @@ export default function SchoolDetailPage() {
 
       {/* 事件一覧 */}
       {tab === 'incidents' && (
-        incLoading ? (
-          <div className="loading">読み込み中...</div>
-        ) : (
-          <>
-            {incData?.items.length === 0 && (
-              <p className="muted" style={{ textAlign: 'center', padding: '2rem' }}>
-                この大学の事件はありません
-              </p>
+        <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+            {user && (
+              <button className="btn btn-primary btn-sm" onClick={() => setShowIncCompose(v => !v)}>
+                {showIncCompose ? '✕ 閉じる' : '＋ 事件を投稿'}
+              </button>
             )}
-            {incData?.items.map(inc => (
-              <IncidentCard
-                key={inc.id}
-                inc={inc}
-                user={user}
-                schoolId={Number(id)}
-                onReact={reactIncident}
-              />
-            ))}
-            {incData && (
-              <Pagination skip={incSkip} limit={INC_LIMIT} total={incData.total} onChange={setIncSkip} />
-            )}
-          </>
-        )
+          </div>
+          {user && showIncCompose && (
+            <IncidentComposeForm
+              schoolId={Number(id)}
+              onCreated={() => { setShowIncCompose(false); fetchIncidents() }}
+              onCancel={() => setShowIncCompose(false)}
+            />
+          )}
+          {incLoading ? (
+            <div className="loading">読み込み中...</div>
+          ) : (
+            <>
+              {incData?.items.length === 0 && (
+                <p className="muted" style={{ textAlign: 'center', padding: '2rem' }}>
+                  この大学の事件はありません
+                </p>
+              )}
+              {incData?.items.map(inc => (
+                <IncidentCard
+                  key={inc.id}
+                  inc={inc}
+                  user={user}
+                  schoolId={Number(id)}
+                  onReact={reactIncident}
+                  onDelete={handleDeleteIncident}
+                  onUpdated={fetchIncidents}
+                />
+              ))}
+              {incData && (
+                <Pagination skip={incSkip} limit={INC_LIMIT} total={incData.total} onChange={setIncSkip} />
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   )

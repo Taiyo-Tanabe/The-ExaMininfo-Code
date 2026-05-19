@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -9,7 +10,7 @@ from .database import get_db
 from . import models
 
 
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
