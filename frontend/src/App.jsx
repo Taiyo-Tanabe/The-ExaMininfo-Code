@@ -15,6 +15,7 @@ import UserProfilePage from './pages/UserProfilePage'
 import AboutPage from './pages/AboutPage'
 import LegalPage from './pages/LegalPage'
 import PostDetailPage from './pages/PostDetailPage'
+import AvatarEditPage from './pages/AvatarEditPage'
 
 function UserByNamePage() {
   const { name } = useParams()
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/login"                  element={<LoginPage />} />
           <Route path="/admin"                  element={<AdminPage />} />
           <Route path="/account"                element={<AccountPage />} />
+          <Route path="/account/avatar"         element={<AvatarEditPage />} />
           <Route path="/posts/:postId"           element={<PostDetailPage />} />
           <Route path="/users/by-name/:name"    element={<UserByNamePage />} />
           <Route path="/users/:userId"          element={<UserProfilePage />} />

@@ -79,10 +79,10 @@ export default function Navbar() {
       <div className="navbar-right navbar-right-pc">
         {user ? (
           <>
-            <Link to="/account" className="navbar-user-name">
+            <Link to="/account/avatar" className="navbar-avatar-link" title="アイコンを変更">
               <NavAvatar user={user} size={28} />
-              {user.name}
             </Link>
+            <Link to="/account" className="navbar-user-name">{user.name}</Link>
             <button className="btn btn-secondary btn-sm" onClick={handleLogout}>ログアウト</button>
           </>
         ) : (
@@ -115,10 +115,11 @@ export default function Navbar() {
           <div className="mobile-nav-divider" />
           {user ? (
             <>
-              <Link to="/account" className="mobile-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <Link to="/account/avatar" className="mobile-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }} onClick={() => setMenuOpen(false)}>
                 <NavAvatar user={user} size={24} />
-                {user.name}
+                {user.name}（アイコン変更）
               </Link>
+              <Link to="/account" className="mobile-nav-item" onClick={() => setMenuOpen(false)}>アカウント設定</Link>
               <button className="mobile-nav-item mobile-nav-logout" onClick={handleLogout}>
                 ログアウト
               </button>

@@ -154,6 +154,8 @@ body::before {
   transition: color 0.15s;
 }
 .navbar-user-name:hover { color: var(--primary); }
+.navbar-avatar-link { display: flex; align-items: center; border-radius: 50%; transition: opacity 0.15s; }
+.navbar-avatar-link:hover { opacity: 0.8; }
 
 /* ═══════════════════════════════════
    LAYOUT

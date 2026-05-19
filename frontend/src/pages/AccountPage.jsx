@@ -98,18 +98,14 @@ function AvatarCropEditor({ avatarUrl, posX, posY, onChange, onSave }) {
 function fmt(d) { return new Date(d).toLocaleDateString('ja-JP') }
 
 // ── プロフィールタブ ──
-function ProfileTab({ user, onAvatarChange }) {
-  const [name, setName]     = useState('')
-  const [email, setEmail]   = useState('')
-  const [bio, setBio]       = useState(user.bio ?? '')
-  const [msg, setMsg]       = useState('')
-  const [err, setErr]       = useState('')
-  const [loading, setLoading]     = useState(false)
-  const [avatarLoading, setAvatarLoading] = useState(false)
-  const [avatarPreview, setAvatarPreview] = useState(user.avatar_url || null)
-  const [posX, setPosX] = useState(user.avatar_position_x ?? 50)
-  const [posY, setPosY] = useState(user.avatar_position_y ?? 50)
-  const fileRef = useRef(null)
+function ProfileTab({ user }) {
+  const navigate = useNavigate()
+  const [name, setName]   = useState('')
+  const [email, setEmail] = useState('')
+  const [bio, setBio]     = useState(user.bio ?? '')
+  const [msg, setMsg]     = useState('')
+  const [err, setErr]     = useState('')
+  const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -127,39 +123,20 @@ function ProfileTab({ user, onAvatarChange }) {
     finally { setLoading(false) }
   }
 
-  async function handleAvatarChange(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setAvatarLoading(true); setErr('')
-    try {
-      const preview = URL.createObjectURL(file)
-      setAvatarPreview(preview)
-      const result = await api.uploadAvatar(file)
-      onAvatarChange?.(result.avatar_url)
-      setMsg('アイコンを更新しました')
-    } catch (e) { setErr(e.message); setAvatarPreview(user.avatar_url || null) }
-    finally { setAvatarLoading(false) }
-  }
-
-  async function handlePositionSave() {
-    setErr(''); setMsg('')
-    try {
-      await api.updateProfile({ avatar_position_x: posX, avatar_position_y: posY })
-      onAvatarChange?.()
-      setMsg('アイコン位置を更新しました')
-    } catch (e) { setErr(e.message) }
-  }
-
   return (
     <div className="card">
       {/* アバター */}
       <div style={{ marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: avatarPreview ? '1rem' : 0 }}>
-          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => fileRef.current?.click()}>
-            {avatarPreview ? (
-              <img src={avatarPreview} alt="avatar" style={{
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div
+            style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }}
+            onClick={() => navigate('/account/avatar')}
+            title="アイコンを変更"
+          >
+            {user.avatar_url ? (
+              <img src={user.avatar_url} alt="avatar" style={{
                 width: 64, height: 64, borderRadius: '50%', objectFit: 'cover',
-                objectPosition: `${posX}% ${posY}%`,
+                objectPosition: `${user.avatar_position_x ?? 50}% ${user.avatar_position_y ?? 50}%`,
                 border: '2px solid var(--border)',
               }} />
             ) : (
@@ -174,9 +151,8 @@ function ProfileTab({ user, onAvatarChange }) {
               onMouseEnter={e => e.currentTarget.style.opacity = 1}
               onMouseLeave={e => e.currentTarget.style.opacity = 0}
             >
-              {avatarLoading ? '...' : '変更'}
+              📷
             </div>
-            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
           </div>
           <div>
             <p style={{ fontWeight: 700, fontSize: '1.05rem' }}>{user.name}</p>
@@ -184,17 +160,15 @@ function ProfileTab({ user, onAvatarChange }) {
             <span className="badge" style={{ marginTop: '0.25rem', background: user.role === 'admin' ? 'rgba(255,102,0,0.25)' : undefined }}>
               {user.role}
             </span>
+            <button
+              className="btn btn-ghost btn-sm"
+              style={{ marginTop: '0.4rem', fontSize: '0.8rem' }}
+              onClick={() => navigate('/account/avatar')}
+            >
+              アイコンを変更 →
+            </button>
           </div>
         </div>
-        {avatarPreview && (
-          <AvatarCropEditor
-            avatarUrl={avatarPreview}
-            posX={posX}
-            posY={posY}
-            onChange={(x, y) => { setPosX(x); setPosY(y) }}
-            onSave={handlePositionSave}
-          />
-        )}
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -684,7 +658,7 @@ export default function AccountPage() {
           </div>
         ))}
       </div>
-      {tab === 'profile'   && <ProfileTab      user={user} onAvatarChange={refreshUser} />}
+      {tab === 'profile'   && <ProfileTab      user={user} />}
       {tab === 'preview'   && <PublicPreviewTab user={user} />}
       {tab === 'password'  && <PasswordTab />}
       {tab === 'posts'     && <MyPostsTab      userId={user.id} />}
