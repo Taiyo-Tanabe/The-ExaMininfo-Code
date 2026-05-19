@@ -79,6 +79,7 @@ class IncidentCreate(IncidentBase):
 class IncidentOut(IncidentBase):
     id: int
     school_id: int
+    school_name:          Optional[str] = None
     user_id:              Optional[int] = None
     user_name:            Optional[str] = None
     user_avatar_url:      Optional[str] = None
@@ -276,6 +277,7 @@ class FollowStatus(BaseModel):
 class ReviewCreate(BaseModel):
     rating: int   # 1–5
     comment: Optional[str] = None
+    course_name: Optional[str] = None
 
 
 class ReviewOut(BaseModel):
@@ -286,8 +288,10 @@ class ReviewOut(BaseModel):
     user_avatar_position_x: int = 50
     user_avatar_position_y: int = 50
     school_id: int
+    school_name: Optional[str] = None
     rating: int
     comment: Optional[str] = None
+    course_name: Optional[str] = None
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 

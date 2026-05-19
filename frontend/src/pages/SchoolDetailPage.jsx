@@ -155,18 +155,26 @@ function CommentSection({ parentType, parentId, schoolId, user }) {
   )
 }
 
-function ReviewComposeForm({ schoolId, onSubmitted }) {
+function ReviewComposeForm({ schoolId, courses = [], onSubmitted }) {
   const [rating, setRating]         = useState(0)
   const [comment, setComment]       = useState('')
+  const [courseName, setCourseName] = useState('')
   const [error, setError]           = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const selectStyle = {
+    marginTop: '0.5rem', width: '100%', background: 'var(--card-2)',
+    border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
+    color: 'var(--text)', fontFamily: 'inherit', fontSize: '0.875rem',
+    padding: '0.5rem 0.75rem', outline: 'none', boxSizing: 'border-box',
+  }
 
   async function handleSubmit() {
     if (!rating) { setError('星評価を選択してください'); return }
     setSubmitting(true); setError('')
     try {
-      await api.createReview(schoolId, { rating, comment: comment.trim() || null })
-      setRating(0); setComment('')
+      await api.createReview(schoolId, { rating, comment: comment.trim() || null, course_name: courseName || null })
+      setRating(0); setComment(''); setCourseName('')
       onSubmitted?.()
     } catch (e) { setError(e.message) }
     finally { setSubmitting(false) }
@@ -176,9 +184,15 @@ function ReviewComposeForm({ schoolId, onSubmitted }) {
     <div className="card" style={{ marginBottom: '1rem' }}>
       <p style={{ fontWeight: 700, marginBottom: '0.6rem' }}>この大学を評価する</p>
       <StarRating value={rating} onChange={setRating} />
+      {courses.length > 0 && (
+        <select value={courseName} onChange={e => setCourseName(e.target.value)} style={selectStyle}>
+          <option value="">学科・コース（任意）</option>
+          {courses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+        </select>
+      )}
       <textarea
         style={{
-          marginTop: '0.75rem', width: '100%', background: 'var(--card-2)',
+          marginTop: '0.5rem', width: '100%', background: 'var(--card-2)',
           border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
           color: 'var(--text)', fontFamily: 'inherit', fontSize: '0.875rem',
           padding: '0.6rem 0.75rem', resize: 'vertical', minHeight: 70,
@@ -293,6 +307,9 @@ function ReviewCard({ review, user, schoolId, onDeleted }) {
                 {fmt(review.created_at)}
               </span>
             </div>
+            {review.course_name && (
+              <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginBottom: '0.2rem' }}>📚 {review.course_name}</p>
+            )}
             {review.comment && (
               <p style={{ fontSize: '0.875rem', color: 'var(--text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                 {review.comment}
@@ -756,6 +773,7 @@ export default function SchoolDetailPage() {
           {user && (
             <ReviewComposeForm
               schoolId={Number(id)}
+              courses={school.courses}
               onSubmitted={() => { fetchReviews(); loadSchool() }}
             />
           )}

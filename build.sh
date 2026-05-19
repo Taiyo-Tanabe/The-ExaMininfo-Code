@@ -11,4 +11,7 @@ npm ci
 npm run build
 cd ..
 
+echo "=== DB migration ==="
+alembic upgrade head
+
 echo "=== Build complete ==="

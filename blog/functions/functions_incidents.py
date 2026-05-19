@@ -33,13 +33,15 @@ def _fmt_incident(db: Session, inc: models.Incident) -> dict:
         models.Post.incident_id == inc.id,
         models.Post.reply_to_id == None,
     ).count()
-    user = db.query(models.User).filter(models.User.id == inc.user_id).first() if inc.user_id else None
+    user   = db.query(models.User).filter(models.User.id == inc.user_id).first() if inc.user_id else None
+    school = db.query(models.School).filter(models.School.id == inc.school_id).first()
     return {
         "id":           inc.id,
         "title":        inc.title,
         "description":  inc.description,
         "course_name":  inc.course_name,
         "school_id":    inc.school_id,
+        "school_name":  school.name if school else None,
         "user_id":                inc.user_id,
         "user_name":              user.name       if user else None,
         "user_avatar_url":        user.avatar_url if user else None,

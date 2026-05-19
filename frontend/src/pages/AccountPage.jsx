@@ -16,9 +16,10 @@ function avatarColor(name) {
 
 function Avatar({ name, avatarUrl, positionX = 50, positionY = 50, size = 40 }) {
   const [bg, fg] = avatarColor(name)
-  if (avatarUrl) {
+  const [imgError, setImgError] = useState(false)
+  if (avatarUrl && !imgError) {
     return (
-      <img src={avatarUrl} alt={name} style={{
+      <img src={avatarUrl} alt={name} onError={() => setImgError(true)} style={{
         width: size, height: size, borderRadius: '50%', objectFit: 'cover',
         objectPosition: `${positionX}% ${positionY}%`,
         border: '2px solid var(--border)', flexShrink: 0,
@@ -319,6 +320,7 @@ function MyIncidentsTab({ userId }) {
           ) : (
             <>
               <p style={{ fontWeight: 700, marginBottom: '0.3rem' }}>{inc.title}</p>
+              {inc.school_name && <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.15rem' }}>🏫 {inc.school_name}</p>}
               {inc.course_name && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginBottom: '0.2rem' }}>📚 {inc.course_name}</p>}
               {inc.description && <p className="muted" style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>{inc.description}</p>}
               <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -361,10 +363,12 @@ function MyReviewsTab({ userId }) {
       )}
       {data?.items.map(rv => (
         <div key={rv.id} className="card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
             <Stars n={rv.rating} />
+            {rv.school_name && <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>🏫 {rv.school_name}</span>}
             <span className="muted" style={{ fontSize: '0.8rem', marginLeft: 'auto' }}>{fmt(rv.created_at)}</span>
           </div>
+          {rv.course_name && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginBottom: '0.2rem' }}>📚 {rv.course_name}</p>}
           {rv.comment && <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>{rv.comment}</p>}
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button className="btn btn-secondary btn-sm" style={{ color: 'var(--danger)' }} onClick={() => handleDelete(rv.id)}>削除</button>
@@ -427,6 +431,9 @@ function MyPostsTab({ userId }) {
             </div>
           ) : (
             <>
+              {post.school_name && (
+                <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.2rem' }}>🏫 {post.school_name}</p>
+              )}
               {post.course_name && (
                 <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginBottom: '0.4rem' }}>📚 {post.course_name}</p>
               )}
@@ -492,6 +499,15 @@ function MyRepostsTab({ userId }) {
                 <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>{rp.comment}</p>
               ) : (
                 <p className="muted" style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>🔁 リポスト（コメントなし）</p>
+              )}
+              {rp.original_post && (
+                <div style={{ borderLeft: '2px solid var(--border)', paddingLeft: '0.6rem', marginBottom: '0.5rem' }}>
+                  {rp.original_post.school_name && <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>🏫 {rp.original_post.school_name}</p>}
+                  {rp.original_post.course_name && <p style={{ fontSize: '0.78rem', color: 'var(--primary)', marginBottom: '0.1rem' }}>📚 {rp.original_post.course_name}</p>}
+                  <p className="muted" style={{ fontSize: '0.8rem' }}>
+                    {rp.original_post.content?.slice(0, 80)}{(rp.original_post.content?.length ?? 0) > 80 ? '…' : ''}
+                  </p>
+                </div>
               )}
               <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <span className="muted" style={{ fontSize: '0.8rem' }}>👍 {rp.like_count}　👎 {rp.dislike_count}</span>
@@ -604,8 +620,7 @@ function DeleteAccountTab({ user }) {
     <div className="card" style={{ borderColor: 'var(--danger)', borderWidth: 1, borderStyle: 'solid' }}>
       <h3 style={{ color: 'var(--danger)', fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>アカウントを削除</h3>
       <p className="muted" style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-        アカウントを削除すると、投稿・リポスト・評価・フォロー情報など、すべてのデータが完全に削除されます。
-        また、このメールアドレスでの再登録はできなくなります。この操作は取り消せません。
+        アカウントを削除すると、投稿・リポスト・評価・フォロー情報など、すべてのデータが完全に削除されます。この操作は取り消せません。
       </p>
       <form onSubmit={handleDelete}>
         <div className="form-group">

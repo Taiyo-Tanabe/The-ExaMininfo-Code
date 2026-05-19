@@ -208,9 +208,10 @@ class Review(Base):
     id        = Column(Integer, primary_key=True, index=True)
     user_id   = Column(Integer, ForeignKey("users.id",   ondelete="CASCADE"), nullable=False)
     school_id = Column(Integer, ForeignKey("schools.id", ondelete="CASCADE"), nullable=False)
-    rating    = Column(Integer, nullable=False)   # 1–5
-    comment   = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    rating      = Column(Integer, nullable=False)   # 1–5
+    comment     = Column(Text, nullable=True)
+    course_name = Column(String, nullable=True)
+    created_at  = Column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (
         UniqueConstraint("user_id", "school_id", name="uq_user_school_review"),

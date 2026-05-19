@@ -209,9 +209,6 @@ def delete_self(db: Session, password: str, current_user: models.User):
     from ..auth import verify_password
     if not verify_password(password, current_user.password):
         raise HTTPException(status_code=400, detail="パスワードが正しくありません")
-    email = current_user.email
     db.delete(current_user)
-    if not db.query(models.BlockedEmail).filter(models.BlockedEmail.email == email).first():
-        db.add(models.BlockedEmail(email=email))
     db.commit()
     return {"message": "account deleted"}

@@ -5,7 +5,8 @@ from .. import models, schemas
 
 
 def _fmt_review(db: Session, rv: models.Review) -> dict:
-    user = db.query(models.User).filter(models.User.id == rv.user_id).first()
+    user   = db.query(models.User).filter(models.User.id == rv.user_id).first()
+    school = db.query(models.School).filter(models.School.id == rv.school_id).first()
     return {
         "id":              rv.id,
         "user_id":                rv.user_id,
@@ -14,8 +15,10 @@ def _fmt_review(db: Session, rv: models.Review) -> dict:
         "user_avatar_position_x": user.avatar_position_x if user else 50,
         "user_avatar_position_y": user.avatar_position_y if user else 50,
         "school_id":       rv.school_id,
+        "school_name":     school.name if school else None,
         "rating":          rv.rating,
         "comment":         rv.comment,
+        "course_name":     rv.course_name,
         "created_at":      rv.created_at,
     }
 
@@ -65,8 +68,9 @@ def create_review(db: Session, school_id: int, data: schemas.ReviewCreate, curre
     ).first()
 
     if existing:
-        existing.rating  = data.rating
-        existing.comment = data.comment
+        existing.rating      = data.rating
+        existing.comment     = data.comment
+        existing.course_name = data.course_name
         db.commit()
         db.refresh(existing)
         return _fmt_review(db, existing)
@@ -76,6 +80,7 @@ def create_review(db: Session, school_id: int, data: schemas.ReviewCreate, curre
         school_id=school_id,
         rating=data.rating,
         comment=data.comment,
+        course_name=data.course_name,
     )
     db.add(review)
     db.commit()

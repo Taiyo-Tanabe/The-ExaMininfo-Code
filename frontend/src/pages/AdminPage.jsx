@@ -322,6 +322,7 @@ function IncidentsTab() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div>
                 <p style={{ fontWeight: 700 }}>{inc.title}</p>
+                {inc.school_name && <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>🏫 {inc.school_name}</p>}
                 {inc.course_name && <p style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>📚 {inc.course_name}</p>}
                 {(inc.occurred_year != null || inc.occurred_month != null || inc.occurred_day != null) && (
                   <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
@@ -384,6 +385,9 @@ function ReviewsTab() {
               {rv.school_name && (
                 <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600 }}>🏫 {rv.school_name}</span>
               )}
+              {rv.course_name && (
+                <span style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>📚 {rv.course_name}</span>
+              )}
             </div>
             <p className="muted" style={{ fontSize: '0.82rem', marginBottom: rv.comment ? '0.25rem' : 0 }}>
               👤 {rv.user_name ?? `#${rv.user_id}`} ・ {new Date(rv.created_at).toLocaleDateString('ja-JP')}
@@ -436,6 +440,7 @@ function PostsTab() {
       {data?.items.map(post => (
         <div key={post.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div style={{ flex: 1 }}>
+            {post.school_name && <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>🏫 {post.school_name}</p>}
             {post.course_name && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginBottom: '0.2rem' }}>📚 {post.course_name}</p>}
             <p style={{ fontSize: '0.9rem' }}>{post.content}</p>
             <p className="muted" style={{ fontSize: '0.8rem', marginTop: '0.3rem' }}>
