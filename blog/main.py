@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from .database import engine, SessionLocal
 from . import models
-from .ruites import routes_schools, routes_courses, routes_incidents, routes_users, routes_posts, routes_settings, routes_reports
+from .routes import routes_schools, routes_courses, routes_incidents, routes_users, routes_posts, routes_settings, routes_reports
 
 app = FastAPI()
 
