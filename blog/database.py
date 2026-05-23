@@ -19,7 +19,11 @@ DATABASE_URL = os.getenv("DATABASE_URL") or (
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-engine = create_engine(DATABASE_URL)
+_connect_args = {}
+if "neon.tech" in DATABASE_URL or "sslmode" in DATABASE_URL:
+    _connect_args = {"options": "-csearch_path=public"}
+
+engine = create_engine(DATABASE_URL, connect_args=_connect_args)
 
 SessionLocal = sessionmaker(bind=engine)
 
