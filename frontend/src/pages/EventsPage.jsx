@@ -48,7 +48,7 @@ export default function EventsPage() {
   const [courses, setCourses] = useState([])
   const [schoolId, setSchoolId] = useState(null)
   const [department, setDepartment] = useState('')
-  const [myOrgs, setMyOrgs] = useState(true)
+  const [myOrgs, setMyOrgs] = useState(!!user)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -75,7 +75,7 @@ export default function EventsPage() {
       .then(setData)
       .catch(() => setError('読み込みに失敗しました'))
       .finally(() => setLoading(false))
-  }, [schoolId, department, myOrgs])
+  }, [schoolId, department, myOrgs, user])
 
   useEffect(() => { load() }, [load])
 
