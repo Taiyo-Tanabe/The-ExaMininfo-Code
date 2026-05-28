@@ -71,8 +71,6 @@ export default function Navbar() {
         <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : ''}>大学</NavLink>
         <NavLink to="/incidents" className={({ isActive }) => isActive ? 'active' : ''}>事件</NavLink>
         <NavLink to="/posts" className={({ isActive }) => isActive ? 'active' : ''}>タイムライン</NavLink>
-        <NavLink to="/events" className={({ isActive }) => isActive ? 'active' : ''}>イベント</NavLink>
-        <NavLink to="/orgs" className={({ isActive }) => isActive ? 'active' : ''}>団体</NavLink>
         {user?.role === 'admin' && (
           <NavLink to="/admin" className={({ isActive }) => isActive ? 'active' : ''}>管理</NavLink>
         )}
@@ -111,8 +109,6 @@ export default function Navbar() {
           <NavLink to="/" end className={({ isActive }) => isActive ? 'mobile-nav-item active' : 'mobile-nav-item'}>大学</NavLink>
           <NavLink to="/incidents" className={({ isActive }) => isActive ? 'mobile-nav-item active' : 'mobile-nav-item'}>事件</NavLink>
           <NavLink to="/posts" className={({ isActive }) => isActive ? 'mobile-nav-item active' : 'mobile-nav-item'}>タイムライン</NavLink>
-          <NavLink to="/events" className={({ isActive }) => isActive ? 'mobile-nav-item active' : 'mobile-nav-item'}>イベント</NavLink>
-          <NavLink to="/orgs" className={({ isActive }) => isActive ? 'mobile-nav-item active' : 'mobile-nav-item'}>団体</NavLink>
           {user?.role === 'admin' && (
             <NavLink to="/admin" className={({ isActive }) => isActive ? 'mobile-nav-item active' : 'mobile-nav-item'}>管理</NavLink>
           )}

@@ -13,7 +13,9 @@ SOURCE_NAME は scrape.py と同じ値にすること。
 
 import csv
 import os
+import re
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -34,6 +36,37 @@ SOURCE_NAME = "momotaro.website"   # scrape.py の SOURCE_NAME と合わせる
 INPUT_CSV   = Path(__file__).parent / "data_raw.csv"
 
 
+def _base_name(name: str) -> str:
+    """末尾の括弧を除いた学部名を返す: '生物資源科学部(獣医以外)' → '生物資源科学部'"""
+    return re.sub(r'\s*\([^)]+\)\s*$', '', name).strip()
+
+
+def merge_split_courses(rows: list[dict]) -> list[dict]:
+    """
+    同一学校・同一学部名で括弧付きサフィックスだけ異なる行を統合する。
+    例: '生物資源科学部(獣医以外)' + '生物資源科学部(獣医学科)' → '生物資源科学部'（偏差値は高い方）
+    単独でしか存在しない括弧付き名称はそのまま残す。
+    """
+    # (school_name, prefecture, base_name) でグループ化
+    groups: dict[tuple, list[dict]] = defaultdict(list)
+    for row in rows:
+        base = _base_name(row["course_name"].strip())
+        key = (row["school_name"].strip(), row["prefecture"].strip(), base)
+        groups[key].append(row)
+
+    merged = []
+    for (school_name, prefecture, base), group in groups.items():
+        if len(group) > 1:
+            # 複数エントリ → 偏差値が最大の行をベースに、名称をベース名に統一
+            best = max(group, key=lambda r: float(r["deviation"]) if r["deviation"] else 0)
+            merged_row = dict(best)
+            merged_row["course_name"] = base
+            merged.append(merged_row)
+        else:
+            merged.append(group[0])
+    return merged
+
+
 def main():
     if not INPUT_CSV.exists():
         print(f"CSVが見つかりません: {INPUT_CSV}")
@@ -46,7 +79,10 @@ def main():
         print("CSVが空です。")
         sys.exit(1)
 
-    print(f"{len(rows)} 件を処理します (出典: {SOURCE_NAME})")
+    print(f"{len(rows)} 件を読み込みました")
+    rows = merge_split_courses(rows)
+    print(f"{len(rows)} 件に統合しました（同学部の括弧付き分割表記をマージ）")
+    print(f"処理開始 (出典: {SOURCE_NAME})")
 
     engine = create_engine(DATABASE_URL)
     school_cache: dict[tuple[str, str], int] = {}

@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from .database import engine, SessionLocal
 from . import models
-from .routes import routes_schools, routes_courses, routes_incidents, routes_users, routes_posts, routes_settings, routes_reports, routes_events, routes_orgs
+from .routes import routes_schools, routes_courses, routes_incidents, routes_users, routes_posts, routes_settings, routes_reports
 
 
 def update_stale_site_content():
@@ -61,8 +61,6 @@ app.include_router(routes_users.router)
 app.include_router(routes_posts.router)
 app.include_router(routes_settings.router)
 app.include_router(routes_reports.router)
-app.include_router(routes_events.router)
-app.include_router(routes_orgs.router)
 
 # React フロントエンド配信
 _frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")

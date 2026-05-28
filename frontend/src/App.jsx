@@ -16,14 +16,6 @@ import AboutPage from './pages/AboutPage'
 import LegalPage from './pages/LegalPage'
 import PostDetailPage from './pages/PostDetailPage'
 import AvatarEditPage from './pages/AvatarEditPage'
-import EventsPage from './pages/EventsPage'
-import EventDetailPage from './pages/EventDetailPage'
-import EventFormPage from './pages/EventFormPage'
-import OrgsPage from './pages/OrgsPage'
-import OrgDetailPage from './pages/OrgDetailPage'
-import OrgFormPage from './pages/OrgFormPage'
-import OrgDashboardPage from './pages/OrgDashboardPage'
-import OrgIconEditPage from './pages/OrgIconEditPage'
 
 function UserByNamePage() {
   const { name } = useParams()
@@ -71,16 +63,6 @@ export default function App() {
           <Route path="/users/:userId"          element={<UserProfilePage />} />
           <Route path="/about"                  element={<AboutPage />} />
           <Route path="/legal"                  element={<LegalPage />} />
-          <Route path="/events"                        element={<EventsPage />} />
-          <Route path="/events/new"                   element={<EventFormPage />} />
-          <Route path="/events/:eventId"              element={<EventDetailPage />} />
-          <Route path="/events/:eventId/edit"         element={<EventFormPage />} />
-          <Route path="/orgs"                         element={<OrgsPage />} />
-          <Route path="/orgs/new"                     element={<OrgFormPage />} />
-          <Route path="/orgs/:orgId"                  element={<OrgDetailPage />} />
-          <Route path="/orgs/:orgId/edit"             element={<OrgFormPage />} />
-          <Route path="/orgs/:orgId/dashboard"        element={<OrgDashboardPage />} />
-          <Route path="/orgs/:orgId/icon"            element={<OrgIconEditPage />} />
         </Routes>
         <Footer />
       </BrowserRouter>
