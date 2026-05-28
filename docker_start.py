@@ -7,8 +7,8 @@ PORT 環境変数が設定されていれば使用（Render）、なければ 80
 import os
 import subprocess
 from sqlalchemy import text
-from blog.database import engine
-from blog import models
+from backend.database import engine
+from backend import models
 
 with engine.connect() as conn:
     row = conn.execute(
@@ -28,6 +28,6 @@ else:
 port = os.getenv("PORT", "8000")
 print(f"=== uvicorn を起動します (port={port}) ===")
 subprocess.run(
-    ["uvicorn", "blog.main:app", "--host", "0.0.0.0", "--port", port],
+    ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", port],
     check=True,
 )
