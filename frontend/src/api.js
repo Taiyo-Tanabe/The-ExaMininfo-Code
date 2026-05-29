@@ -129,48 +129,6 @@ export const api = {
   deleteReport:           (id)               => request(`/reports/${id}`, { method: 'DELETE' }),
   deleteReportedContent:  (type, id)         => request(`/reports/content/${type}/${id}`, { method: 'DELETE' }),
 
-  // Organizations（団体）
-  uploadOrgIcon: (orgId, file) => {
-    const form = new FormData()
-    form.append('file', file)
-    return fetch(`${BASE}/orgs/${orgId}/icon`, {
-      method: 'POST',
-      headers: { ...authHeaders() },
-      body: form,
-    }).then(async r => {
-      if (!r.ok) { const e = await r.json().catch(() => ({ detail: 'エラー' })); throw new Error(e.detail) }
-      return r.json()
-    })
-  },
-  getOrgs:            (p = {})         => request(`/orgs/?${qs(p)}`),
-  getOrg:             (id)             => request(`/orgs/${id}`),
-  createOrg:          (data)           => request('/orgs/', { method: 'POST', body: JSON.stringify(data) }),
-  updateOrg:          (id, data)       => request(`/orgs/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  deleteOrg:          (id)             => request(`/orgs/${id}`, { method: 'DELETE' }),
-
-  // メンバー
-  getOrgMembers:    (id, status)       => request(`/orgs/${id}/members${status ? `?status=${status}` : ''}`),
-  joinOrg:          (id, data = {})    => request(`/orgs/${id}/join`, { method: 'POST', body: JSON.stringify(data) }),
-  leaveOrg:         (id)               => request(`/orgs/${id}/leave`, { method: 'DELETE' }),
-  updateMember:     (id, uid, data)    => request(`/orgs/${id}/members/${uid}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  removeMember:     (id, uid)          => request(`/orgs/${id}/members/${uid}`, { method: 'DELETE' }),
-
-  // Events
-  getEvents:           (p = {})           => request(`/events/?${qs(p)}`),
-  getEvent:            (id)               => request(`/events/${id}`),
-  createEvent:         (data)             => request('/events/', { method: 'POST', body: JSON.stringify(data) }),
-  updateEvent:         (id, data)         => request(`/events/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  deleteEvent:         (id)               => request(`/events/${id}`, { method: 'DELETE' }),
-  attendEvent:         (id, status, note = undefined) => request(`/events/${id}/attend`, { method: 'PUT', body: JSON.stringify({ status, note }) }),
-  cancelAttendance:    (id)               => request(`/events/${id}/attend`, { method: 'DELETE' }),
-  getAttendees:        (id, p = {})       => request(`/events/${id}/attendees?${qs(p)}`),
-  approveAttendance:   (id, uid, status)  => request(`/events/${id}/attendees/${uid}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-
-  // 閲覧申請
-  requestView:         (id)          => request(`/events/${id}/view-request`, { method: 'POST' }),
-  getViewRequests:     (id)          => request(`/events/${id}/view-requests`),
-  handleViewRequest:   (id, uid, status) => request(`/events/${id}/view-requests/${uid}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-
   // User approval (admin)
   getPendingUsers:   (p = {})  => request(`/users/pending?${qs(p)}`),
   approveUser:       (id)      => request(`/users/${id}/approve`, { method: 'PATCH' }),

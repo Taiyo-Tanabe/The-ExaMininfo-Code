@@ -5,6 +5,7 @@ from .database import Base
 
 
 
+
 # =====================
 # School
 # =====================
@@ -111,19 +112,14 @@ class User(Base):
     avatar_position_x = Column(Integer, nullable=False, server_default='50')
     avatar_position_y = Column(Integer, nullable=False, server_default='50')
 
-    posts                  = relationship("Post",              back_populates="user",    cascade="all, delete")
-    reposts                = relationship("Repost",            back_populates="user",    cascade="all, delete")
-    reactions              = relationship("Reaction",          back_populates="user",    cascade="all, delete")
-    incidents              = relationship("Incident",          back_populates="user")
-    reviews                = relationship("Review",            back_populates="user",    cascade="all, delete")
-    following              = relationship("Follow", foreign_keys="Follow.follower_id",  back_populates="follower",       cascade="all, delete")
-    followers              = relationship("Follow", foreign_keys="Follow.following_id", back_populates="following_user", cascade="all, delete")
-    reports                = relationship("Report",            back_populates="reporter", cascade="all, delete")
-    created_organizations  = relationship("Organization",      back_populates="creator",  cascade="all, delete")
-    created_events         = relationship("Event",             back_populates="creator",  cascade="all, delete")
-    event_attendances      = relationship("EventAttendance",   back_populates="user",    cascade="all, delete")
-    event_view_requests    = relationship("EventViewRequest",  back_populates="user",    cascade="all, delete")
-    org_memberships        = relationship("OrgMember",         back_populates="user",    cascade="all, delete")
+    posts      = relationship("Post",     back_populates="user",    cascade="all, delete")
+    reposts    = relationship("Repost",   back_populates="user",    cascade="all, delete")
+    reactions  = relationship("Reaction", back_populates="user",    cascade="all, delete")
+    incidents  = relationship("Incident", back_populates="user")
+    reviews    = relationship("Review",   back_populates="user",    cascade="all, delete")
+    following  = relationship("Follow", foreign_keys="Follow.follower_id",  back_populates="follower",       cascade="all, delete")
+    followers  = relationship("Follow", foreign_keys="Follow.following_id", back_populates="following_user", cascade="all, delete")
+    reports    = relationship("Report",   back_populates="reporter", cascade="all, delete")
 
 
 # =====================
@@ -255,118 +251,3 @@ class BlockedEmail(Base):
     blocked_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
-# =====================
-# Organization（団体）
-# =====================
-class Organization(Base):
-    __tablename__ = "organizations"
-
-    id          = Column(Integer, primary_key=True, index=True)
-    name        = Column(String, unique=True, nullable=False, index=True)
-    description = Column(Text, nullable=True)
-    created_by  = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    created_at  = Column(DateTime(timezone=True), server_default=func.now())
-
-    school_id             = Column(Integer, ForeignKey("schools.id", ondelete="SET NULL"), nullable=True)
-    department            = Column(String, nullable=True)
-    personal_info_prompt  = Column(Text, nullable=True)
-    icon_url              = Column(Text, nullable=True)
-    icon_position_x       = Column(Integer, default=50, server_default='50')
-    icon_position_y       = Column(Integer, default=50, server_default='50')
-
-    creator = relationship("User",   back_populates="created_organizations")
-    school  = relationship("School")
-    events  = relationship("Event",     back_populates="organization", cascade="all, delete")
-    members = relationship("OrgMember", back_populates="organization", cascade="all, delete")
-
-
-# =====================
-# Event
-# =====================
-class Event(Base):
-    __tablename__ = "events"
-
-    id                      = Column(Integer, primary_key=True, index=True)
-    title                   = Column(String, nullable=False, index=True)
-    description             = Column(Text, nullable=True)
-    location                = Column(String, nullable=True)
-    start_at                = Column(DateTime(timezone=True), nullable=True)
-    end_at                  = Column(DateTime(timezone=True), nullable=True)
-    max_participants        = Column(Integer, nullable=True)
-    requires_view_approval  = Column(Boolean, nullable=False, default=False, server_default='false')
-    requires_join_approval  = Column(Boolean, nullable=False, default=False, server_default='false')
-    allow_member_view       = Column(Boolean, nullable=False, default=True,  server_default='true')
-    allow_member_join       = Column(Boolean, nullable=False, default=True,  server_default='true')
-    org_id                  = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True)
-    created_by              = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    created_at              = Column(DateTime(timezone=True), server_default=func.now())
-
-    organization  = relationship("Organization",    back_populates="events")
-    creator       = relationship("User",            back_populates="created_events")
-    attendances   = relationship("EventAttendance", back_populates="event", cascade="all, delete")
-    view_requests = relationship("EventViewRequest", back_populates="event", cascade="all, delete")
-
-
-# =====================
-# EventAttendance
-# =====================
-class EventAttendance(Base):
-    __tablename__ = "event_attendances"
-
-    id         = Column(Integer, primary_key=True, index=True)
-    event_id   = Column(Integer, ForeignKey("events.id",  ondelete="CASCADE"), nullable=False)
-    user_id    = Column(Integer, ForeignKey("users.id",   ondelete="CASCADE"), nullable=False)
-    # "attending" | "not_attending" | "pending"（承認待ち）
-    status     = Column(String, nullable=False, default="attending")
-    note       = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    __table_args__ = (
-        UniqueConstraint("event_id", "user_id", name="uq_event_attendance"),
-    )
-
-    event = relationship("Event", back_populates="attendances")
-    user  = relationship("User",  back_populates="event_attendances")
-
-
-# =====================
-# EventViewRequest（閲覧申請）
-# =====================
-class EventViewRequest(Base):
-    __tablename__ = "event_view_requests"
-
-    id         = Column(Integer, primary_key=True, index=True)
-    event_id   = Column(Integer, ForeignKey("events.id",  ondelete="CASCADE"), nullable=False)
-    user_id    = Column(Integer, ForeignKey("users.id",   ondelete="CASCADE"), nullable=False)
-    # "pending" | "approved" | "rejected"
-    status     = Column(String, nullable=False, default="pending")
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    __table_args__ = (
-        UniqueConstraint("event_id", "user_id", name="uq_view_request"),
-    )
-
-    event = relationship("Event", back_populates="view_requests")
-    user  = relationship("User",  back_populates="event_view_requests")
-
-
-# =====================
-# OrgMember（団体メンバー）
-# =====================
-class OrgMember(Base):
-    __tablename__ = "org_members"
-
-    id        = Column(Integer, primary_key=True, index=True)
-    org_id    = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
-    user_id   = Column(Integer, ForeignKey("users.id",         ondelete="CASCADE"), nullable=False)
-    role          = Column(String, nullable=False, default="member",  server_default="member")   # "member" | "admin"
-    status        = Column(String, nullable=False, default="pending", server_default="approved")  # "pending" | "approved"
-    personal_info = Column(Text, nullable=True)
-    joined_at     = Column(DateTime(timezone=True), server_default=func.now())
-
-    __table_args__ = (
-        UniqueConstraint("org_id", "user_id", name="uq_org_member"),
-    )
-
-    organization = relationship("Organization", back_populates="members")
-    user         = relationship("User",         back_populates="org_memberships")
