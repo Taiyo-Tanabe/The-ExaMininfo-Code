@@ -1,14 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../AuthContext'
 import Pagination from '../components/Pagination'
 import PostCard, { Avatar, MentionTextarea, ComposeArea } from '../components/PostCard'
-
-function fmtEventDate(iso) {
-  if (!iso) return '日時未定'
-  return new Date(iso).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
 
 const INC_LIMIT      = 10
 const REVIEW_LIMIT   = 20
@@ -552,7 +547,6 @@ function IncidentCard({ inc, user, schoolId, onReact, onDelete, onUpdated }) {
 export default function SchoolDetailPage() {
   const { id }      = useParams()
   const { user }    = useAuth()
-  const navigate    = useNavigate()
   const [school, setSchool]         = useState(null)
   const [tab, setTab]               = useState('courses')
 
@@ -571,11 +565,6 @@ export default function SchoolDetailPage() {
   const [tlSkip, setTlSkip]       = useState(0)
   const [tlOrder, setTlOrder]     = useState('desc')
   const [tlLoading, setTlLoading] = useState(false)
-
-  const [eventsData, setEventsData]     = useState(null)
-  const [eventsLoading, setEventsLoading] = useState(false)
-  const [orgsData, setOrgsData]         = useState(null)
-  const [orgsLoading, setOrgsLoading]   = useState(false)
 
   function loadSchool() {
     api.getSchool(id).then(setSchool)
@@ -616,28 +605,6 @@ export default function SchoolDetailPage() {
   useEffect(() => {
     if (tab === 'timeline') fetchTimeline()
   }, [tab, fetchTimeline])
-
-  const fetchEvents = useCallback(() => {
-    setEventsLoading(true)
-    api.getEvents({ school_id: id, limit: 50 })
-      .then(setEventsData)
-      .finally(() => setEventsLoading(false))
-  }, [id])
-
-  useEffect(() => {
-    if (tab === 'events') fetchEvents()
-  }, [tab, fetchEvents])
-
-  const fetchOrgs = useCallback(() => {
-    setOrgsLoading(true)
-    api.getOrgs({ school_id: id, limit: 100 })
-      .then(setOrgsData)
-      .finally(() => setOrgsLoading(false))
-  }, [id])
-
-  useEffect(() => {
-    if (tab === 'orgs') fetchOrgs()
-  }, [tab, fetchOrgs])
 
   async function handleTlReact(postId, reaction) {
     if (!user) return alert('ログインが必要です')
@@ -708,8 +675,6 @@ export default function SchoolDetailPage() {
         <div className={`tab ${tab === 'timeline'  ? 'active' : ''}`} onClick={() => setTab('timeline')}>タイムライン</div>
         <div className={`tab ${tab === 'reviews'   ? 'active' : ''}`} onClick={() => setTab('reviews')}>評価</div>
         <div className={`tab ${tab === 'incidents' ? 'active' : ''}`} onClick={() => setTab('incidents')}>事件</div>
-        <div className={`tab ${tab === 'events'    ? 'active' : ''}`} onClick={() => setTab('events')}>イベント</div>
-        <div className={`tab ${tab === 'orgs'      ? 'active' : ''}`} onClick={() => setTab('orgs')}>団体</div>
       </div>
 
       {/* コース一覧 */}
@@ -834,101 +799,6 @@ export default function SchoolDetailPage() {
             </>
           )}
         </>
-      )}
-
-      {/* イベントタブ */}
-      {tab === 'events' && (
-        eventsLoading ? (
-          <div className="loading">読み込み中...</div>
-        ) : (
-          <>
-            {user && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
-                <button className="btn btn-primary btn-sm" onClick={() => navigate('/events/new')}>
-                  + イベントを作る
-                </button>
-              </div>
-            )}
-            {!eventsData || eventsData.items.length === 0 ? (
-              <p className="muted" style={{ textAlign: 'center', padding: '2rem' }}>
-                この大学のイベントはありません
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {eventsData.items.map(ev => (
-                  <Link key={ev.id} to={`/events/${ev.id}`} style={{ textDecoration: 'none' }}>
-                    <div className="card" style={{ padding: '1rem 1.25rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                        <div style={{ flex: 1 }}>
-                          <p style={{ fontWeight: 700, margin: 0 }}>
-                            {ev.title ?? <span style={{ fontStyle: 'italic', color: 'var(--muted)' }}>非公開</span>}
-                          </p>
-                          {ev.org_name && (
-                            <p style={{ fontSize: '0.82rem', color: 'var(--primary)', margin: '0.15rem 0 0' }}>{ev.org_name}</p>
-                          )}
-                          <p className="muted" style={{ fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
-                            📅 {fmtEventDate(ev.start_at)}{ev.location ? `　📍 ${ev.location}` : ''}
-                          </p>
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                          {ev.requires_view_approval && <span className="badge" style={{ fontSize: '0.75rem' }}>閲覧承認が必要</span>}
-                          {ev.requires_join_approval && <span className="badge" style={{ fontSize: '0.75rem' }}>参加承認が必要</span>}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </>
-        )
-      )}
-
-      {/* 団体タブ */}
-      {tab === 'orgs' && (
-        orgsLoading ? (
-          <div className="loading">読み込み中...</div>
-        ) : (
-          <>
-            {user && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
-                <button className="btn btn-primary btn-sm" onClick={() => navigate(`/orgs/new?school_id=${id}`)}>
-                  + 団体を作る
-                </button>
-              </div>
-            )}
-            {!orgsData || orgsData.items.length === 0 ? (
-              <p className="muted" style={{ textAlign: 'center', padding: '2rem' }}>
-                この大学の団体はありません
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {orgsData.items.map(org => (
-                  <Link key={org.id} to={`/orgs/${org.id}`} style={{ textDecoration: 'none' }}>
-                    <div className="card" style={{ padding: '1rem 1.25rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontWeight: 700, margin: 0 }}>{org.name}</p>
-                          {org.department && (
-                            <p style={{ fontSize: '0.8rem', color: 'var(--primary)', margin: '0.1rem 0 0' }}>{org.department}</p>
-                          )}
-                          {org.description && (
-                            <p className="muted" style={{ fontSize: '0.85rem', margin: '0.2rem 0 0' }}>
-                              {org.description.length > 60 ? org.description.slice(0, 60) + '…' : org.description}
-                            </p>
-                          )}
-                        </div>
-                        <span className="muted" style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                          👥 {org.member_count + 1}人　📅 {org.event_count}件
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </>
-        )
       )}
 
       {/* 事件一覧 */}
